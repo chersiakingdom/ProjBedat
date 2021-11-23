@@ -91,15 +91,12 @@ class naverShopping:
 
             time.sleep(6)
 
-            #리뷰 개수
             rev = driver.find_element_by_css_selector(
                 "#REVIEW > div > div._2y6yIawL6t > div > div._1jXgNbFhaN > div.WiSiiSdHv3 > strong > span").text
             rev = rev.replace(",", "")
-
-            #print(rev)
             reviewnum = int(rev)
 
-            time.sleep(3)
+            time.sleep(1)
 
             #페이지 개수
             pagenum = (reviewnum // 20) + 1
@@ -108,18 +105,20 @@ class naverShopping:
 
             count = 1
             k = 2
+            d = 2
 
             while (k - 1 <= pagenum and count <= reviewnum):  # 최대(or전체) pagenum
                 score = driver.find_elements_by_css_selector('div._37TlmH3OaI em._15NU42F3kT')
-                time.sleep(3)
+                time.sleep(1)
                 arti = driver.find_elements_by_css_selector('div.YEtwtZFLDz')
-                time.sleep(3)
+                time.sleep(1)
                 date = driver.find_elements_by_css_selector('div._2FmJXrTVEX span._3QDEeS6NLn')
-                time.sleep(3)
+                time.sleep(1)
                 options = driver.find_elements_by_css_selector("div._38yk3GGMZq span._3QDEeS6NLn")
-                time.sleep(3)
+                time.sleep(1)
 
                 for sc, ar, da, op in zip(score, arti, date, options):
+
                     scorenum = sc.text
                     article = ar.text
                     datenum = da.text
@@ -138,16 +137,22 @@ class naverShopping:
 
                 if count % 20 == 1 and count != 1:
                     k += 1
+                    d += 1
                     print("next")
+
+                    if d == 13:
+                        d = d - 10
+
                     if k == 3:
                         driver.find_element_by_xpath('//*[@id="REVIEW"]/div/div[3]/div/div[2]/div/div/a[3]').click()
-                        time.sleep(2)
+                        time.sleep(1)
                         driver.find_element_by_xpath('//*[@id="REVIEW"]/div/div[3]/div/div[2]/div/div/a[3]').click()
-                        time.sleep(2)
+                        time.sleep(1)
                     else:
                         driver.find_element_by_xpath(
-                            '//*[@id="REVIEW"]/div/div[3]/div/div[2]/div/div/a[' + str(k) + ']').click()
-                        time.sleep(2)
+                            '//*[@id="REVIEW"]/div/div[3]/div/div[2]/div/div/a[' + str(d) + ']').click()
+                        time.sleep(1)
+
 
 
         except:
@@ -231,11 +236,11 @@ class naverShopping:
 
             time.sleep(1)
             alltopic = driver.find_elements_by_css_selector("#topic_div")
-            time.sleep(1)
 
             num = 0
             count2 = 1
             k2 = 2
+
             doc['topic'] = []
             alltop = alltopic[0].text.split("\n")
 
@@ -247,21 +252,22 @@ class naverShopping:
                 num += 1
                 count2 = 1
                 k2 = 2
+                d2 = 2
+
                 print(num, ":", topic)
                 doc['topic'].append(topic)
                 doc[str(topic)] = []
                 driver.find_element_by_xpath('//*[@id="topic_ul"]/li[' + str(i + 2) + ']/a').send_keys(Keys.ENTER)
-                time.sleep(3)
+                time.sleep(1)
                 rev = driver.find_element_by_css_selector("span.q9fRhG-eTG").text
                 rev = rev.replace(",", "")
                 reviewnum = int(rev)
-                pagenum = (reviewnum // 20) + 1
+                pagenum = (reviewnum // 20) + 1  # 각 topic 별 리뷰의 총 갯수와 page 갯수
 
                 while (k2 - 1 <= pagenum and count2 <= reviewnum):  # 최대 몇페이지, 페이지 넘어갈때마다
                     topicwords = driver.find_elements_by_css_selector("em._2_otgorpaI")
-                    time.sleep(3)
+                    time.sleep(1)
                     score = driver.find_elements_by_css_selector('div._37TlmH3OaI em._15NU42F3kT')
-                    time.sleep(3)
 
                     for word, sco in zip(topicwords, score):
                         word = word.text
@@ -277,16 +283,21 @@ class naverShopping:
 
                         if count2 % 20 == 1 and count2 != 1:
                             k2 += 1
+                            d2 += 1
                             print("next")
+                            if d2 == 13:
+                                d2 = d2 - 10
                             if k2 == 3:
-                                driver.find_element_by_xpath('//*[@id="REVIEW"]/div/div[3]/div/div[2]/div/div/a[3]').click()
-                                time.sleep(2)
-                                driver.find_element_by_xpath('//*[@id="REVIEW"]/div/div[3]/div/div[2]/div/div/a[3]').click()
-                                time.sleep(2)
+                                driver.find_element_by_xpath(
+                                    '//*[@id="REVIEW"]/div/div[3]/div/div[2]/div/div/a[3]').click()
+                                time.sleep(1)
+                                driver.find_element_by_xpath(
+                                    '//*[@id="REVIEW"]/div/div[3]/div/div[2]/div/div/a[3]').click()
+                                time.sleep(1)
                             else:
                                 driver.find_element_by_xpath(
-                                    '//*[@id="REVIEW"]/div/div[3]/div/div[2]/div/div/a[' + str(k2) + ']').click()
-                                time.sleep(2)
+                                    '//*[@id="REVIEW"]/div/div[3]/div/div[2]/div/div/a[' + str(d2) + ']').click()
+                                time.sleep(1)
 
                 topiccount.append(count2)
 
@@ -301,7 +312,7 @@ class naverShopping:
                 aver = topicscoreset2[alltop[i + 1]] / (topiccount[i] - 1)
                 topicaver[alltop[i + 1]] = round(aver, 2)
                 score.append(round(aver, 2))
-            print(topicaver)
+
             doc['평점'] = score
             driver.close()
             return doc
