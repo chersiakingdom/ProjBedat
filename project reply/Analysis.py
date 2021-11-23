@@ -2,6 +2,9 @@ from konlpy.tag import Okt
 from pymongo import MongoClient
 from collections import Counter
 
+client = MongoClient('localhost', 27017)  # 코딩할때 체킹용 디비
+db = client.reply
+
 stop_words = ['절대','그냥','너희','이번','다음','지금','누가','퍼트','현재',"니들","풀어주","절대","너희들","안하","단지","어차피","걔네","하다","하게","들이","만큼","이것",
 "아", "휴", "아이구", "아이쿠", "아이고", "어", "나", "우리", "저희", "따라", "의해", "을", "를", "에", "의",
 "가", "으로", "로", "에게", "뿐이다" ,"의거하여", "근거하여", "입각하여", "기준으로", "예하면", "예를", "들면", "들자면" ,"저",
@@ -27,12 +30,13 @@ stop_words = ['절대','그냥','너희','이번','다음','지금','누가','�
 "지든지", "몇", "거의", "하마터면", "인젠", "이젠", "된바에야", "된이상", "만큼", "어찌됏든",
 "그위에", "게다가", "점에서", "보아", "비추어", "보아", "고려하면", "하게될것이다", "일것이다", "비교적", "좀" ,"보다더", "비하면", "시키다", "하게하다",
 "할만하다", "의해서", "연이서", "이어서", "잇따라", "뒤따라", "뒤이어", "결국", "의지하여", "기대여", "통하여", "자마자", "더욱더", "불구하고", "얼마든지", "마음대로"
-,"당연","당신","얼마","살았","하시","고통스럽","^ㅋ","ㅋㅋ","ㅋㅋㅋ","^ㅎ","ㅎㅎ","내년","어쩌","가즈","드러븐","정도","수가","이전"]
+,"당연","당신","얼마","살았","하시","고통스럽","^ㅋ","ㅋㅋ","ㅋㅋㅋ","^ㅎ","ㅎㅎ","내년","어쩌","가즈","드러븐","정도","수가","이전","사람","이제"]
 class Analysis_noun:
     def __init__(self,text):
         self.text = text
 
     def extractNoun(self):
+
         okt = Okt()
         morph = okt.pos(self.text)
 
@@ -41,9 +45,11 @@ class Analysis_noun:
             if tag in ['Noun'] and word not in stop_words:
                 noun.append(word)
 
+
         for i,v in enumerate(noun):
             if v in stop_words:
                 noun.pop(i)
+
         noun = [n for n in noun if len(n)>1]
 
         return noun
@@ -89,6 +95,48 @@ class Analysis_Ad:
 
         return noun_adj_list
 
+    def extractNoun(self):
+        db.nouns.drop()
+        print("extractNoun 함수 시작")
+        nlpy = Okt()
+        #print(self.text)
+        # 각 문장별로 형태소 구분하기
+        sentences_tag = []
+        for sentence in self.text:
+
+            morph = nlpy.pos(sentence,stem=True)
+            sentences_tag.append(morph)
+
+        # 명사 or 형용사인 품사만 선별해 리스트에 담기
+        noun_list = []
+        count = 0
+        for sentence in sentences_tag:
+            count += 1
+
+            for word, tag in sentence:
+                if tag in ['Noun'] and word not in stop_words:
+                    noun_list.append(word)
+                    doc = {'id':count,'word': word}
+                    db.nouns.insert_one(doc)
+    def extractNoun2(self):
+        nlpy = Okt()
+        # print(self.text)
+        # 각 문장별로 형태소 구분하기
+        sentences_tag = []
+        for sentence in self.text:
+            morph = nlpy.pos(sentence, stem=True)
+            sentences_tag.append(morph)
+
+        # 명사 or 형용사인 품사만 선별해 리스트에 담기
+        noun_list = []
+        count = 0
+        for sentence in sentences_tag:
+            count += 1
+
+            for word, tag in sentence:
+                if tag in ['Noun'] and word not in stop_words:
+                    noun_list.append(word)
+        return noun_list
     def extractOnlyAd(self):
         nlpy = Okt()
         # 각 문장별로 형태소 구분하기
@@ -105,6 +153,15 @@ class Analysis_Ad:
                 if tag in ['Adjective'] and word not in ['아주', '정말', '모두', '진짜', '완전','있다','아니다','어떻다','이렇다','그렇다','같다','없다']:
                     adj_list.append(word)
         return adj_list
+    def noun_counter(self):
+        words = self.extractNoun2()
+        count = Counter(words)
+        top5 = count.most_common(n=5)
+        list = []
+        for i in range(len(top5)):
+            list.append(top5[i][0])
+
+        return list
 
     def ad_counter(self):
         words = self.extractAd()

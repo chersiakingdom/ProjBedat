@@ -4,18 +4,28 @@ import re
 import os
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
-from operator import itemgetter
-from collections import Counter
-import platform
 import rpy2.robjects as robjects
+from pymongo import MongoClient
+
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.layers import Embedding, Dense, LSTM, Dropout
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import load_model
+from konlpy.tag import Okt
+import re
+import pandas as pd
+import numpy as np
+from tqdm import tqdm
 
 
-import io
-import urllib, base64
 
-import matplotlib.pyplot as plt
-from wordcloud import WordCloud
-from wordcloud import STOPWORDS
+
+
+
+
+client = MongoClient('localhost', 27017)  # 코딩할때 체킹용 디비
+db = client.reply
 
 
 # articleTitle
@@ -55,6 +65,8 @@ class naverNews:
         btn_more.click()
 
         per = driver.find_elements_by_css_selector('span.u_cbox_chart_per')
+        if (len(per) == 0):
+            return 0
 
         male = per[0].text  # 남자 성비
         female = per[1].text  # 여자 성비
@@ -75,6 +87,7 @@ class naverNews:
         self.des_statics['50대 비율'] = fifty
         self.des_statics['60대 이상'] = sixty_up
 
+        driver.close()
         return self.des_statics
 
     # 여러 리스트들을 하나로 묶어 주는 함수입니다.
@@ -89,6 +102,37 @@ class naverNews:
             else:
                 flatList.append(elem)
         return flatList
+
+    def hot_reply(self,link):
+        oid = link.split("oid=")[1].split("&")[0]  # 422
+        aid = link.split("aid=")[1]  # 0000430957
+        count = 0
+        page = 1
+        header = {
+            "User-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36",
+            "referer": link,
+        }
+        list = []
+        while True:
+            c_url = "https://apis.naver.com/commentBox/cbox/web_neo_list_jsonp.json?ticket=news&templateId=default_society&pool=cbox5&_callback=jQuery1707138182064460843_1523512042464&lang=ko&country=&objectId=news" + oid + "%2C" + aid + "&categoryId=&pageSize=20&indexSize=10&groupId=&listType=OBJECT&pageType=more&page=" + str(
+                page) + "&refresh=false&sort=FAVORITE"
+            # 파싱하는 단계입니다.
+            r = requests.get(c_url, headers=header)
+
+            cont = BeautifulSoup(r.content, "html.parser")
+
+            total_comm = str(cont).split('comment":')[1].split(",")[0]
+
+            match = re.findall('"contents":([^\*]*),"userIdNo"', str(cont))
+
+            for i in range(len(match)):
+                list.append(match[i])
+                if i>100:
+                    break
+
+            if len(list) > 300 :
+                break
+        return list
 
     def clean_bot_reply(self):
 
@@ -150,80 +194,208 @@ class naverNews:
         return allComments
 
     def sentimental(self, list):
+        print("sentimental 시작")
+        list = pd.Series(list)
+        self.sentiment_predict(list)
+        # db.goodorbad.drop()
+        #
+        # for sentence in list:
+        #     doc={}
+        #
+        #     result = self.sentiment_predict(sentence)
+        #     if result == 1:
+        #         doc = {'text':sentence,'color':'blue'}
+        #     elif result == -1:
+        #         doc = {'text':sentence,'color':'red'}
+        #     else:
+        #         doc = {'text': sentence, 'color': 'green'}
+        #
+        #     db.goodorbad.insert_one(doc)
 
-        rQuery="""
-        pkg_fun <- function(pkg) {
+
+    def clean_bot_off(self):
+
+        options = webdriver.ChromeOptions()
+        options.add_argument('headless')
+        options.add_argument('window-size=1920x1080')
+        options.add_argument("disable-gpu")
+
+        driver = webdriver.Chrome(ChromeDriverManager().install(),chrome_options=options)  # () 안에는 chromedriver.exe 위치
+        driver.implicitly_wait(30)
+        driver.get(self.url)
+
+        # 뉴스창에서 댓글창으로 넘어가기
+        btn_more = driver.find_element_by_css_selector('a.u_cbox_btn_view_comment')
+        btn_more.click()
+
+        btn_clean = driver.find_element_by_css_selector('a.u_cbox_cleanbot_setbutton')
+        btn_clean.click()
+        clean_bot = driver.find_element_by_css_selector('div.u_cbox_layer_cleanbot2_description').text
+
+        if (clean_bot == '욕설 뿐 아니라 모욕적인 표현이 담긴 댓글까지 AI 기술로 감지하여 자동으로 숨겨줍니다.'):  # 활성화 상태면
+            btn_check_clean = driver.find_element_by_id('cleanbot_dialog_checkbox_cbox_module')
+            btn_check_clean.click()
+
+        btn_done_clean = driver.find_element_by_css_selector('div.u_cbox_layer_cleanbot2_extra')
+        btn_done_clean.click()
+
+        # 전체 댓글 목록 펼치기
+        while True:
+            try:
+                btn_more_reply = driver.find_element_by_css_selector('a.u_cbox_btn_more')
+                btn_more_reply.click()
+                # time.sleep(1)
+            except:
+                break
+
+        # 댓글 모으기
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'lxml')
+        divs = soup.find_all("div", {"class": "u_cbox_area"})
+
+        for div in divs:
+
+            time = div.find("span", {"class": "u_cbox_date"}).get_text(strip=True)
+
+            try:
+                dic = {}
+
+                reply = int(div.find("span", {"class": "u_cbox_reply_cnt"}).get_text(strip=True))
+                comment = div.find("span", {"class": "u_cbox_contents"}).get_text(strip=True)
+                sympathy = int(div.find("em", {"class": "u_cbox_cnt_recomm"}).get_text(strip=True))
+                anti = int(div.find("em", {"class": "u_cbox_cnt_unrecomm"}).get_text(strip=True))
+
+                dic['댓글내용'] = comment
+                dic['대댓글 수'] = reply
+                dic['작성시간'] = time
+                dic['공감수'] = sympathy
+                dic['비공감수'] = anti
+
+                if (sympathy != 0 or anti != 0):
+                    if (sympathy > anti):
+                        argu_rate = anti / sympathy
+                    else:
+                        argu_rate = sympathy / anti
+                else:
+                    argu_rate = 0
+                dic['논란수치'] = argu_rate
+
+                self.List.append(dic)
+
+            except:
+                comment = np.nan
+                sympathy = np.nan
+                anti = np.nan
+
+            finally:
+
+                driver.close()
+                return self.List
+
+    def topicModeling(self):
+        rQuery = """ 
+            pkg_fun <- function(pkg) {
   if (!require(pkg, character.only = TRUE)) {
     install.packages(pkg)
     library(pkg, character.only = TRUE)
   }
 }
 
-pkg_fun("DBI")
-pkg_fun("RSQLite")
-pkg_fun("plyr")
+Sys.setlocale("LC_CTYPE", ".1251")
+
+pkg_fun("readr")
+pkg_fun("dplyr")
 pkg_fun("stringr")
+pkg_fun("textclean")
 pkg_fun("mongolite")
+pkg_fun("tidytext")
+pkg_fun("tm")
+pkg_fun("topicmodels")
+pkg_fun("reshape2")
 
-setwd("./static")
 
-
-newdb <- mongo(collection = "reply",
+newdb <- mongo(collection = "nouns",
                db = "reply",
                url = "mongodb://localhost",
                verbose = TRUE)
-test <- newdb$find()
-txt<-test$comment
-txt=txt[-1]
+test <- newdb$find() %>% filter(str_count(word)>1) %>% group_by(id) %>% distinct(word,.keep_all=T)%>%ungroup() %>% select(id,word)
 
-positive<-readLines("positive.txt",encoding="UTF-8")
-positive=positive[-1]
 
-negative<-readLines("negative.txt",encoding="UTF-8")
-negative=negative[-1]
+count_word <- test %>% add_count(word) %>% add_count(n <= 200) %>% select(-n)
 
-sentimental = function(sentences, positive, negative){
+count_word_doc <- count_word %>% count(id,word,sort=T)
 
-  scores = laply(sentences, function(sentence, positive, negative) {
+dtm_comment <- count_word_doc %>% cast_dtm(document=id,term = word, value=n)
 
-    sentence = gsub('[[:punct:]]', '', sentence) # 문장부호 제거
-    sentence = gsub('[[:cntrl:]]', '', sentence) # 특수문자 제거
-    sentence = gsub('\\\\d+', '', sentence)        # 숫자 제거
+LDA_models <- LDA(dtm_comment,k=5,method="Gibbs",control=list(seed= 1234))
 
-    word.list = str_split(sentence,'\\\\s+')      
-    words = unlist(word.list)                    # unlist() : list를 vector 객체로 구조변경
 
-    pos.matches = match(words, positive)           # words의 단어를 positive에서 matching
-    neg.matches = match(words, negative)
+term_topic <- tidy(LDA_models,matrix="beta")
 
-    pos.matches = !is.na(pos.matches)            # NA 제거, 위치(숫자)만 추출
-    neg.matches = !is.na(neg.matches)
+top_term_topic <- term_topic %>% group_by(topic) %>% slice_max(beta,n=5,with_ties = F)
 
-    score = sum(pos.matches) - sum(neg.matches)  # 긍정 - 부정
-    return(score)
-  }, positive, negative)
+result <- as.data.frame(top_term_topic)
 
-  scores.df = data.frame(score=scores, text=sentences)
-  return(scores.df)
-
-}
-
-result=sentimental(txt, positive, negative)
-
-result$color[result$score >=1] = "blue"
-result$color[result$score ==0] = "green"
-result$color[result$score < 0] = "red"
-
-tmp<-table(result$color)
-
-con <- mongo(collection = "goodorbad",
+con <- mongo(collection = "topicModeling",
                db = "reply",
                url = "mongodb://localhost",
                verbose = TRUE)
 
 if(con$count() > 0) con$drop()
-con$insert(result)
-        """
+con$insert(result)"""
         robjects.r(rQuery)
 
+    def sentiment_predict(self,new_sentence):
+        db.goodorbad.drop()
+        okt = Okt()
+        stopwords = ['의', '가', '이', '은', '들', '는', '좀', '잘', '걍', '과', '도', '를', '으로', '자', '에', '와', '한', '하다']
+        max_len = 35
 
+        dfset = pd.read_csv("sentimental_train_data.csv")
+        npset = dfset.to_numpy()
+
+        dataset = []
+        for sentence in npset:
+            nan_removed_sentence = [word for word in sentence if str(word) != 'nan']
+            dataset.append(nan_removed_sentence)
+
+        tokenizer = Tokenizer()
+        tokenizer.fit_on_texts(dataset)
+
+        vocab_size = 24749
+
+        tokenizer = Tokenizer(vocab_size)
+        tokenizer.fit_on_texts(dataset)
+
+        ########################################
+
+        loaded_model = load_model('best_model.h5')
+
+        new_sentence = new_sentence.str.replace("[^ㄱ-ㅎㅏ-ㅣ가-힣 ]", "")
+
+        predictset = []
+        for sentence in tqdm(new_sentence):
+            tokenized_sentence = okt.morphs(sentence, stem=True)  # 토큰화
+            stopwords_removed_sentence = [word for word in tokenized_sentence if not word in stopwords]  # 불용어 제거
+            predictset.append(stopwords_removed_sentence)
+        ###
+
+        predictset = np.array(predictset)
+
+        encoded = tokenizer.texts_to_sequences(predictset)  # 정수 인코딩
+
+        pad_new = pad_sequences(encoded, maxlen=max_len)  # 패딩
+        score = loaded_model.predict(pad_new)  # 예측
+
+        for i in range(len(new_sentence)):
+            doc={}
+            if (float(score[i])>0.55):
+
+                doc = {'text':new_sentence[i],'color':'blue','rate':float(score[i]) * 100}
+            elif (float(score[i]) < 0.45):
+                rate = 1- (float(score[i]) * 100)
+                doc = {'text': new_sentence[i], 'color': 'red','rate':rate}
+            else:
+                doc = {'text': new_sentence[i], 'color': 'green','rate':float(score[i]) * 100}
+
+            db.goodorbad.insert_one(doc)
