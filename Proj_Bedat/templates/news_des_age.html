@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <title>베리 - 댓글 분석 프로젝트</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet"/>
+    <link href="../static/styles.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"
+            crossorigin="anonymous"></script>
+
+    <!-- Bootstrap icons-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet"
+          type="text/css"/>
+
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet"
+          type="text/css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+
+
+    <!-- fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap" rel="stylesheet">
+    <!-- Core theme CSS (includes Bootstrap)-->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+    <link href="css/demo.css" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="/SRC2/jbar/jqbar.css"/>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.18/c3.min.css"/>
+
+
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.11/c3.min.js"></script>
+    <script>
+        var colors = ['#D9C7D2', '#C5A2BC', '#506358', '#88A185', '#CAD2B8', '#E2E3CE']
+
+        $(document).ready(function () {
+            get_statics();
+
+        });
+
+        // 기술통계 (성별, 나이별) 를 서버로부터 가져오고 파이차트와 바차트를 그리는 함수
+        function get_statics() {
+
+            let des = {}
+
+            $.ajax({
+                type: "GET",
+                url: "/api/newsdata1",
+                data: {},
+                success: function (response) { // 성공하면
+                    des = response
+                    // 기술통계 파트를 딕셔너리 형태로 가져온뒤, 각 파트에 맞게 %를 떼고 str->int로 변경
+                    if (des != 0) {
+                        let male = Number(des['남성 비율'].slice(0, -1));
+                        let female = Number(des['여성 비율'].slice(0, -1));
+                        let _10 = Number(des['10대 비율'].slice(0, -1));
+                        let _20 = Number(des['20대 비율'].slice(0, -1));
+                        let _30 = Number(des['30대 비율'].slice(0, -1));
+                        let _40 = Number(des['40대 비율'].slice(0, -1));
+                        let _50 = Number(des['50대 비율'].slice(0, -1));
+                        let _60 = Number(des['60대 이상'].slice(0, -1));
+
+                        let temp_html1 = `<span class="one1"
+                                                  style="width:${male}%; color:white;">  &nbsp; ${male}%</span>`
+                        $('#male').append(temp_html1);
+
+                        temp_html1 = `<span class="white"
+                                                  style="width:${male}%;"> </span>
+                                                  <span class="one1"
+                                                  style="width:${female}%; color:white;">${female}%</span>`;
+                        $('#female').append(temp_html1);
+                        draw_bar(_10, _20, _30, _40, _50, _60)
+                    }
+
+                }
+            });
+        }
+
+
+
+        function draw_bar(_10, _20, _30, _40, _50, _60) {
+            c3.generate({
+                    bindto: '#barchart',
+                    data: {
+                        columns: [
+                            ['%', _10, _20, _30, _40, _50, _60]
+                        ],
+                        type: 'bar',
+                        color: function (color, d) {
+                            return colors[d.index];
+                        }
+                    },
+                    bar: {
+                        width: {
+                            ratio: 0.4
+                        }
+                    },
+                    axis: {
+                        x: {
+                            type: 'category',
+                            categories: ['10대', '20대', '30대', '40대', '50대', '60대 이상']
+                        },
+                        y: {
+                            max: 100,
+                            min: 0,
+                            padding: {
+                                top: 0,
+                                bottom: 0
+                            },
+                            tick: {
+                                count: 6
+                            }
+                        }
+                    },
+                    tooltop: {
+                        show: false
+                    },
+                    legend: {
+                        show: false
+                    },
+                    padding: {
+                        bottom: 20,
+                        top: 20
+                    }
+                }
+            );
+        }
+
+
+
+        function desAll() {
+
+            location.href = '/news_des_all'
+        }
+
+        function desAge() {
+            location.href = '/news_des_age'
+        }
+
+        function desWord() {
+            location.href = '/news_des_word'
+        }
+
+        function statAll() {
+            location.href = '/news_stat_all'
+        }
+
+        function statPos() {
+            location.href = '/news_stat_pos'
+        }
+
+        function statTopic() {
+            location.href = '/news_stat_topic'
+        }
+
+        function returnMain() {
+            location.href = '/'
+        }
+
+        function showall() {
+            location.href = '/news_result'
+        }
+
+    </script>
+</head>
+<body class="sb-nav-fixed">
+<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+    <!-- Navbar Brand-->
+    <a class="navbar-brand title" onClick="returnMain()">&nbsp; 베리 &nbsp;<span class="subtitle">-&nbsp;뉴스 댓글</span></a>
+    <!-- Sidebar Toggle-->
+    <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i
+            class="fas fa-bars"></i></button>
+
+    <!-- Help tip -->
+    <div class="help-tip" style="z-index:1;">
+        <p>댓글/리뷰 분석 사이트인 "베리"를 이용해주셔서 감사합니다.<br><br>뉴스 댓글 분석 시 제공하는 것들<br>
+            <br> - 성별 나이별 분포 : 네이버 뉴스 댓글 작성자의 성별, 연령대별 비율
+            <br> - 댓글 작성 시간 분포도 : 네이버 뉴스 댓글 작성 시간대별 분포
+            <br> - 긍정 - 부정 수치 그래프 : 감성분석기법을 사용하여 긍부정 판단
+            <br> - 논란수치 : 논란이 되는 댓글 상위 4개
+            <br> - 관련 단어 토픽 모델링
+            <br> - 워드클라우드 : 핵심 단어 시각화</p>
+    </div>
+
+
+</nav>
+<div id="layoutSidenav">
+    <div id="layoutSidenav_nav">
+        <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+            <div class="sb-sidenav-menu">
+                <div class="nav">
+                    <div class="sb-sidenav-menu-heading">Main</div>
+                    <a class="nav-link" onClick="showall()" class="dohyeon_subtitle">
+                        <!-- news_result.html -->
+                        <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                        All result
+                    </a>
+                    <div class="sb-sidenav-menu-heading">Statistics</div>
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
+                       aria-expanded="false" aria-controls="collapseLayouts">
+                        <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                        Descriptive
+                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne"
+                         data-bs-parent="#sidenavAccordion">
+                        <nav class="sb-sidenav-menu-nested nav">
+                            <a class="nav-link" onClick="desAll()">See all</a>
+                            <a class="nav-link" onClick="desAge()">성별 및 나이 분포</a>
+                            <a class="nav-link" onClick="desWord()">댓글 작성 시간 분포 & 워드 클라우드</a>
+
+                        </nav>
+                    </div>
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages"
+                       aria-expanded="false" aria-controls="collapsePages">
+                        <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                        Statistical
+                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapsePages" aria-labelledby="headingTwo"
+                         data-bs-parent="#sidenavAccordion">
+                        <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
+                            <a class="nav-link" onClick="statAll()">See all</a>
+                            <a class="nav-link" onClick="statPos()">긍정-부정</a>
+                            <a class="nav-link" onClick="statTopic()">토픽 모델링</a>
+
+
+                        </nav>
+                    </div>
+
+                </div>
+            </div>
+            <div class="sb-sidenav-footer">
+                <div class="small">Generated by :</div>
+                HF-267 [베댓]
+            </div>
+        </nav>
+    </div>
+    <div id="layoutSidenav_content">
+        <main style="background-color:rgba(255,240,245,0.5)">
+            <div class="container_2">
+                <br>
+                <h2 class="main-title dohyeon_title" style="text-align: center;">기술 통계<span style="font-size:0.7em;"
+                                                                                            id="title"></span>
+                </h2>
+                <!--                나이분포-->
+                <div class="stat-cards">
+
+                    <div class="col-md-6 col-xl-12" style="height:300px;">
+                        <article class="stat-cards-item">
+                            <div class="container_2">
+                                <h4 style="margin-bottom:10px;" class="dohyeon_subtitle">성별 분포</h4>
+                                <div class="row stat-cards"
+                                     style="background-color:#fff; box-shadow: none; height:110px; margin-bottom:5px; width:100%;">
+
+
+                                    <div class="col-xl-1" style="height:110px;">
+                                        <article class="stat-cards-item1" style="width:110px;">
+                                            <img style="width:200px;" src="../static/assets/img/male.png">
+                                        </article>
+                                    </div>
+                                    <div class="col-xl-11" style="height:110px;">
+                                        <article id="male" class="stat-cards-item1">
+
+                                        </article>
+                                    </div>
+                                </div>
+                                <div class="row stat-cards"
+                                     style="height:110px; float:right; width:100%; margin-right:17px;">
+
+                                    <div class="col-xl-11" style="height:110px;">
+                                        <article id="female" class="stat-cards-item1 row">
+
+
+                                        </article>
+                                    </div>
+                                    <div class="col-xl-1" style="height:110px;">
+                                        <article class="stat-cards-item1" style="width:110px;">
+                                            <img style="width:200px;" src="../static/assets/img/female.png">
+                                        </article>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </article>
+                    </div>
+
+                </div>
+
+                <!--                연령분포-->
+                <div class="stat-cards">
+                    <div class="col-md-6 col-xl-12">
+                        <article class="stat-cards-item">
+                            <div class="container_2">
+                                <h4 style="margin-bottom:20px;" class="dohyeon_subtitle">나이 분포</h4>
+                                <div id="barchart" style="height:300px;"></div>
+
+                            </div>
+
+                        </article>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+<script src="../static/scripts.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+
+</body>
+</html>

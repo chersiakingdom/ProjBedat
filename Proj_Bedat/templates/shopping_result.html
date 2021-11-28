@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <title>베리 - 댓글 분석 프로젝트</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet"/>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"
+            crossorigin="anonymous"></script>
+
+    <!-- Bootstrap icons-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet"
+          type="text/css"/>
+
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet"
+          type="text/css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+
+
+    <!-- fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap" rel="stylesheet">
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="../static/style02_shopping.css" rel="stylesheet"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/SRC2/jbar/jqbar.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.18/c3.min.css"/>
+
+
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.11/c3.min.js"></script>
+    <script>
+
+        $(document).ready(function () {
+            get_statics();
+        });
+
+        function draw_area(label, time_val) {
+            c3.generate({
+                bindto: "#areachart",
+                data: {
+                    columns: [
+                        time_val
+                    ],
+                    type: 'area-spline'
+
+                },
+                legend: {
+                    position: 'right'
+                },
+                axis: {
+                    x: {
+                        show: false
+                    }
+                },
+                tooltop: {
+                    show: false
+                },
+                color: {
+                    pattern: ['#D9705F']
+                }
+            });
+        }
+
+
+        function get_statics() {
+
+            let des = {}
+
+            $.ajax({
+                type: "GET",
+                url: "/api/shoppingdata",
+                data: {},
+                success: function (response) { // 성공하면
+                    des = response
+                    let review_num = des['num_review']
+                    let rate = des['rate']
+                    let topics = des['topics']
+                    let topic_score = des['topic_score']
+                    let time = response['time']
+                    let modeling = response['modeling']
+                    let num_topic = topics.length
+                    let repurchase = response['repurchase']
+                    let tmp_rate = (rate / 5) * 100
+
+                    //총 리뷰 개수
+                    $('#all_users_score').text(review_num + " 개")
+
+                    //재구매율
+                    $('#sales').text(repurchase + "개")
+
+                    // 사용자 총평점
+                    let tmp_html = `<div class="wrap-star">
+                            <div class='star-rating'>
+                                <span style="width:${tmp_rate}%" id="star_rate"></span>
+                            </div>
+                        </div>
+                        <a class="gamja_flower">${rate}/5.0</a>`
+                    $('#user_star').append(tmp_html)
+
+                    // 제품 옵션별 구매순위
+                    let rank_key = response['rank_key']
+                    let rank_value = response['rank_value']
+                    let leng = rank_key.length
+                    // if (leng > 10) {
+                    //     rank_key = rank_key.slice(0, 10)
+                    //     rank_value = rank_value.slice(0, 10)
+                    // }
+                    for (let i = 0; i < rank_key.length; i++) {
+                        let temp_html2 = ``
+                        let temp_key = rank_key[i]
+                        let temp_value = rank_value[i]
+                        if (i < 2) {
+                            temp_html2 = `<li>
+                        <a>
+                            <div class="top-cat-list__title">
+                                ${temp_key}
+                            </div>
+                            <div class="top-cat-list__subtitle">
+                                총 구매량 <span class="blue">${temp_value}</span>
+                            </div>
+                        </a>
+                    </li>`
+                        } else if (i < 5) {
+                            temp_html2 = `<li>
+                        <a>
+                            <div class="top-cat-list__title">
+                                ${temp_key}
+                            </div>
+                            <div class="top-cat-list__subtitle">
+                                총 구매량 <span class="primary">${temp_value}</span>
+                            </div>
+                        </a>
+                    </li>`
+                        } else if (i < 9) {
+                            temp_html2 = `<li>
+                        <a>
+                            <div class="top-cat-list__title">
+                                ${temp_key}
+                            </div>
+                            <div class="top-cat-list__subtitle">
+                                총 구매량 <span class="warning">${temp_value}</span>
+                            </div>
+                        </a>
+                    </li>`
+                        } else {
+                            temp_html2 = `<li>
+                        <a>
+                            <div class="top-cat-list__title">
+                                ${temp_key}
+                            </div>
+                            <div class="top-cat-list__subtitle">
+                                총 구매량 <span class="danger">${temp_value}</span>
+                            </div>
+                        </a>
+                    </li>`
+                        }
+
+                        $('#option_list').append(temp_html2)
+                    }
+                    // 토픽분석 : 주제별 리뷰
+                    for (let i = 0; i < 8; i++) {
+
+                        if (i < num_topic) {
+                            let topic = topics[i]
+                            let num = i + 1
+                            let temp_id = '#topic' + num;
+                            $(temp_id).html('# ' + topic)
+                        }
+                    }
+
+                    //각 주제별 토픽 모델링 시각화
+                    for (let i = 0; i < num_topic; i++) {
+                        let temp_model = modeling[i];
+                        let model_length = temp_model.length;
+                        let temp_list = []
+                        let temp_num = []
+                        let temp_total = 0
+                        for (let j = 0; j < model_length; j++) {
+                            temp_list.push(temp_model[j][0])
+                            temp_num.push(temp_model[j][1])
+                            temp_total += temp_model[j][1]
+                        }
+
+                        for (let j = 0; j < 5; j++) {
+                            if (j > model_length - 1) {
+                                temp_list.push(" ")
+                                temp_num.push("0")
+                            }
+                        }
+
+                        let temp_html = `<div>
+                                    <span class="blue" style="width:${temp_num[0] * 100 / temp_num[0]}%;"> ${temp_list[0]}</span>
+                                    <span class="red" style="width:${temp_num[1] * 100 / temp_num[0]}%;"> ${temp_list[1]}</span>
+                                    <span class="green" style="width:${temp_num[2] * 100 / temp_num[0]}%;"> ${temp_list[2]}</span>
+                                    <span class="yellow" style="width:${temp_num[3] * 109 / temp_num[0]}%;"> ${temp_list[3]}</span>
+                                    <span class="purple" style="width:${temp_num[4] * 100 / temp_num[0]}%;"> ${temp_list[4]}</span>
+                                </div>`
+                        let num = i + 1
+                        let temp_id = '#model' + num;
+                        $(temp_id).append(temp_html)
+                    }
+
+                    // 토픽별 평점
+                    for (let i = 0; i < num_topic; i++) {
+                        let key = topics[i]
+
+                        let value = topic_score[i]
+
+                        let temp_html = ``
+                        let star_html0 = `<div class="card">
+                            <div class="container3">
+                                <h5><b>${key}</b></h5>
+                                <hr>
+                                <p>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                </p>
+                            </div>
+                        </div>`
+                        let star_html1 = `<div class="card">
+                            <div class="container3">
+                                <h5><b>${key}</b></h5>
+                                <hr>
+                                <p>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                </p>
+                            </div>
+                        </div>`
+                        let star_html2 = `<div class="card">
+                            <div class="container3">
+                                <h5><b>${key}</b></h5>
+                                <hr>
+                                <p>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                </p>
+                            </div>
+                        </div>`
+                        let star_html3 = `<div class="card">
+                            <div class="container3">
+                                <h5><b>${key}</b></h5>
+                                <hr>
+                                <p>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                </p>
+                            </div>
+                        </div>`
+                        let star_html4 = `<div class="card">
+                            <div class="container3">
+                                <h5><b>${key}</b></h5>
+                                <hr>
+                                <p>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star"></span>
+                                </p>
+                            </div>
+                        </div>`
+                        let star_html5 = `<div class="card">
+                            <div class="container3">
+                                <h5><b>${key}</b></h5>
+                                <hr>
+                                <p>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                </p>
+                            </div>
+                        </div>`
+                        if (value == 0.0) {
+                            temp_html = star_html0
+                        } else if (value == 1.0) {
+                            temp_html = star_html1
+                        } else if (value == 2.0) {
+                            temp_html = star_html2
+                        } else if (value == 3.0) {
+                            temp_html = star_html3
+                        } else if (value == 4.0) {
+                            temp_html = star_html4
+                        } else {
+                            temp_html = star_html5
+                        }
+
+                        if ((i + 1) % 2 != 0) {
+                            $('#topic_left').append(temp_html)
+                        } else {
+                            $('#topic_right').append(temp_html)
+                        }
+
+                    }
+                    // 각 제품/옵션 평점
+                    let option_key = response['option_key']
+                    let option_value = response['option_value']
+                    leng = option_key.length
+
+
+                    for (let i = 0; i < option_key.length; i++) {
+                        let key = option_key[i]
+                        let value = option_value[i]
+
+                        let temp_html = ``
+                        let star_html0 = `<div class="card">
+                            <div class="container3">
+                                <h5><b>${key}</b></h5>
+                                <hr>
+                                <p>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                </p>
+                            </div>
+                        </div>`
+                        let star_html1 = `<div class="card">
+                            <div class="container3">
+                                <h5><b>${key}</b></h5>
+                                <hr>
+                                <p>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                </p>
+                            </div>
+                        </div>`
+                        let star_html2 = `<div class="card">
+                            <div class="container3">
+                                <h5><b>${key}</b></h5>
+                                <hr>
+                                <p>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                </p>
+                            </div>
+                        </div>`
+                        let star_html3 = `<div class="card">
+                            <div class="container3">
+                                <h5><b>${key}</b></h5>
+                                <hr>
+                                <p>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                </p>
+                            </div>
+                        </div>`
+                        let star_html4 = `<div class="card">
+                            <div class="container3">
+                                <h5><b>${key}</b></h5>
+                                <hr>
+                                <p>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star"></span>
+                                </p>
+                            </div>
+                        </div>`
+                        let star_html5 = `<div class="card">
+                            <div class="container3">
+                                <h5><b>${key}</b></h5>
+                                <hr>
+                                <p>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                <span class="fa fa-star option-checked"></span>
+                                </p>
+                            </div>
+                        </div>`
+                        if (value == 0.0) {
+                            temp_html = star_html0
+                        } else if (value == 1.0) {
+                            temp_html = star_html1
+                        } else if (value == 2.0) {
+                            temp_html = star_html2
+                        } else if (value == 3.0) {
+                            temp_html = star_html3
+                        } else if (value == 4.0) {
+                            temp_html = star_html4
+                        } else {
+                            temp_html = star_html5
+                        }
+
+                        if ((i + 1) % 2 != 0) {
+                            $('#option_left').append(temp_html)
+                        } else {
+                            $('#option_right').append(temp_html)
+                        }
+                    }
+                    // 작성시간 분포 그래프
+                    let label = []
+                    let time_val = ['작성개수']
+
+                    for (let i = 0; i < time.length; i++) {
+                        let tmp = time[i][0]
+                        label.push("20" + tmp)
+                        time_val.push(time[i][1])
+                    }
+
+                    draw_area(label, time_val)
+
+                    // 워드 클라우드
+                    let temp_image = `<image src="/static/assets/wordcloud.png" style="position:absolute; width:600px; height:auto;
+                                 "></image>`
+                    $('#wordcloud_image').append(temp_image);
+                }
+            });
+        }
+
+        function desWord() {
+            location.href = '/shopping_word'
+        }
+        function desTopic() {
+            location.href = '/shopping_Topic'
+        }
+        function desItem() {
+            location.href = '/shopping_Item'
+        }
+
+        function showAll(){
+            location.href='/shopping_result'
+        }
+        function returnMain() {
+            location.href = '/'
+        }
+
+    </script>
+
+</head>
+<body class="sb-nav-fixed">
+<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+    <!-- Navbar Brand-->
+    <a class="navbar-brand title" onClick="returnMain()">&nbsp; 베리 &nbsp;<span class="subtitle">-&nbsp;쇼핑 리뷰</span></a>
+    <!-- Sidebar Toggle-->
+    <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i
+            class="fas fa-bars"></i></button>
+
+    <!-- Help tip -->
+    <div class="help-tip" style="z-index:1;">
+        <p><br><br>쇼핑 리뷰 분석 시 제공하는 것들<br>
+            <br><br> -URL의 댓글창에 대한 총 리뷰 개수
+            <br> -모든 평점의 평균
+            <br> -네이버 인증 기준 상품의 총 재구매 횟수
+            <br> -각 토픽별 평점의 평균 / 토픽별 구매자의 주요 반ㅇㅇ
+            <br> -각 제품, 옵션별 평점 평균 / 구매량 기준 구매 순위
+            <br> -일자 기준 댓글 작성시간 분포 그래프
+            <br> -구매자 주요 반응에 대한 워드 클라우드
+        <p>
+    </div>
+
+
+</nav>
+<div id="layoutSidenav">
+    <div id="layoutSidenav_nav">
+        <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+            <div class="sb-sidenav-menu">
+                <div class="nav">
+                    <div class="sb-sidenav-menu-heading">Main</div>
+                    <a class="nav-link" onClick="showAll()" class="dohyeon_subtitle">
+
+                        <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                        All result
+                    </a>
+                    <div class="sb-sidenav-menu-heading">Statistics</div>
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
+                       aria-expanded="false" aria-controls="collapseLayouts">
+                        <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                        Statistic
+                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne"
+                         data-bs-parent="#sidenavAccordion">
+                        <nav class="sb-sidenav-menu-nested nav">
+                            <a class="nav-link" onClick="desTopic()">토픽 별 분석</a>
+                            <a class="nav-link" onClick="desItem()">제품 별 분석</a>
+                            <a class="nav-link" onClick="desWord()">댓글 작성 시간 분포 & 워드 클라우드</a>
+
+                        </nav>
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="sb-sidenav-footer">
+                <div class="small">Generated by :</div>
+                HF-267 [베댓]
+            </div>
+        </nav>
+    </div>
+    <div id="layoutSidenav_content">
+        <main class="main users chart-page" style="background-color: #FFFDF9;" id="skip-target">
+            <div class="container_2">
+                <h2 class="main-title dohyeon_title">댓글 분석 결과 &nbsp; &nbsp;<span style="font-size:0.7em;"
+                                                                                 id="title"></span>
+                </h2>
+
+
+                <div class="row stat-cards">
+
+                    <!--        사용자 총평점 및 전체 리뷰수 -->
+
+
+                    <div class="col-xl-3 col-md-6">
+                        <article class="stat-cards-item">
+                            <!--  사용자 총 평점-->
+                            <div class="container_2">
+                                <h4 class="dohyeon_subtitle"> 총 리뷰 갯수 </h4>
+                                <div class="row"
+                                     style="justify-content:center; align-items:center; display:flex; height: 80px;">
+                                    <a class="gamja_flower" style="font-size:35px;"
+                                       id="all_users_score"></a>
+                                </div>
+                            </div>
+
+                            <!-- 전체 리뷰수 -->
+                            <div class="container_2">
+                                <h4 class="dohyeon_subtitle"> 사용자 총 평점</h4>
+                                <div
+                                        style="justify-content:center; align-items:center; display:flex; height: 80px;"
+                                        id="user_star">
+                                    <div class="review" style="height: 80px;"></div>
+
+
+                                </div>
+                            </div>
+
+                            <div class="container_2">
+                                <h4 style="margin-bottom:10px;" class="dohyeon_subtitle"> 재구매율 </h4>
+                                <div class="row"
+                                     style="justify-content:center; align-items:center; display:flex; height: 80px;">
+                                    <a class="gamja_flower" style="font-size:35px;"
+                                       id="sales"></a>
+
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="col-xl-4 col-md-6" style="height:385.2px;">
+                        <article class="stat-cards-item">
+                            <div class="container_2" style="overflow:scroll; overflow-x: hidden;">
+                                <h4 style="margin-bottom:20px;" class="dohyeon_subtitle">각 토픽별 평점 </h4>
+                                <div class="option_row" id="topics" style="height:300px;">
+
+                                    <div class="option_left" id="topic_left">
+
+                                    </div>
+
+                                    <div class="option_right" id="topic_right">
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="col-xl-5 col-md-6" style="height:385.2px;">
+                        <article class="stat-cards-item">
+                            <div class="container_2" style="overflow:scroll; overflow-x: hidden;">
+                                <h4 style="margin-bottom:10px;" class="dohyeon_subtitle">각 제품/옵션별 평점 </h4>
+                                <div class="option_row" id="per_score" style="height:300px;">
+
+                                    <div class="option_left" id="option_left">
+
+                                    </div>
+
+                                    <div class="option_right" id="option_right">
+
+                                    </div>
+
+
+                                </div>
+
+                            </div>
+                        </article>
+                    </div>
+
+
+                </div>
+
+
+                <!--       토픽분석결과 -->
+                <div class="row" style="margin-top:100px;">
+                    <div class="col-lg-9">
+
+                        <!--     분석결과-->
+                        <div class="white-block" style="height:630px;">
+                            <h4 style="margin-bottom:20px;" class="dohyeon_subtitle"> 토픽 분석 : 주제별 리뷰 </h4>
+                            <br>
+
+                            <div class="row" id="topic_setting">
+                                <div class="col-xl-3"
+                                     style="overflow:hidden; positon:relative; height:250px;">
+                                    <div class="container_2">
+                                        <span id="topic1" class="dohyeon_subtitle"></span>
+                                        <div class="words" id="model1">
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-xl-3"
+                                     style="overflow:hidden; positon:relative; height:250px;">
+                                    <div class="container_2">
+                                        <span id="topic2" class="dohyeon_subtitle"></span>
+                                        <div class="words" id="model2">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-xl-3"
+                                     style="overflow:hidden; positon:relative; height:250px;">
+                                    <div class="container_2">
+                                        <span id="topic3" class="dohyeon_subtitle"></span>
+                                        <div class="words" id="model3">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-xl-3"
+                                     style="overflow:hidden; positon:relative; height:250px;">
+                                    <div class="container_2">
+                                        <span id="topic4" class="dohyeon_subtitle"></span>
+                                        <div class="words" id="model4">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-xl-3"
+                                     style="overflow:hidden; positon:relative; height:250px;">
+                                    <div class="container_2">
+                                        <span id="topic5" class="dohyeon_subtitle"></span>
+                                        <div class="words" id="model5">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-xl-3"
+                                     style="overflow:hidden; positon:relative; height:250px;">
+                                    <div class="container_2">
+                                        <span id="topic6" class="dohyeon_subtitle"></span>
+                                        <div class="words" id="model6">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-xl-3"
+                                     style="overflow:hidden; positon:relative; height:250px;">
+                                    <div class="container_2">
+                                        <span id="topic7" class="dohyeon_subtitle"></span>
+                                        <div class="words" id="model7">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-xl-3"
+                                     style="overflow:hidden; positon:relative; height:250px;">
+                                    <div class="container_2">
+                                        <span id="topic8" class="dohyeon_subtitle"></span>
+                                        <div class="words" id="model8">
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!--            댓글의 토픽 리스트-->
+                    <div class="col-lg-3" style="margin-left:-10px; ">
+                        <article class="white-block" style="height:630px; overflow:scroll; overflow-x: hidden;">
+                            <div class="top-cat-title">
+                                <h3> 제품/옵션별 구매 순위</h3>
+                                <p id="comments"> 제품명, 누적구매량 </p>
+                            </div>
+                            <ul class="top-cat-list" id="option_list">
+
+                            </ul>
+                        </article>
+                    </div>
+                </div>
+
+                <!--    작성 시간 분포도 및 워드 클라우드-->
+
+                <div class="col-lg-12">
+                    <div class="white-block" style="margin-left:-10px; margin-top:350px; height:400px;">
+                        <div class="row">
+                            <!--            작성시간 분포도-->
+                            <div class="col-xl-7">
+                                <h4 style="margin-bottom:20px;" class="dohyeon_subtitle">댓글 작성 시간 분포</h4>
+                                <div id="areachart"></div>
+
+
+                            </div>
+                            <!--            워드 클라우드-->
+                            <div class="col-xl-5" id="wordcloud_image" style="overflow:hidden; positon:relative;">
+                                <h4 style="margin-bottom:20px; position:absolute;  z-index:1;" class="dohyeon_subtitle">
+                                    워드 클라우드</h4>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+
+            </div>
+
+
+        </main>
+
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+<script src="../static/scripts.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+</body>
+</html>
