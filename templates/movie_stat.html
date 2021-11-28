@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <title>베리 - 댓글 분석 프로젝트</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet"/>
+    <link href="../static/style02.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"
+            crossorigin="anonymous"></script>
+
+    <!-- Bootstrap icons-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet"
+          type="text/css"/>
+
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet"
+          type="text/css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Sunflower:wght@300&display=swap" rel="stylesheet">
+    <!-- fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap" rel="stylesheet">
+    <!-- Core theme CSS (includes Bootstrap)-->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+    <link href="css/demo.css" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="/SRC2/jbar/jqbar.css"/>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.18/c3.min.css"/>
+
+
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.11/c3.min.js"></script>
+
+    <script>
+        var topic = {}
+        var topic_time = []
+        var topic_reviews = []
+        var topic_good = []
+        var topic_bad = []
+
+        $(document).ready(function () {
+            /* get_url(); */
+
+            get_reviews();
+            /* get_topics(); */
+        });
+
+
+        function get_reviews() {
+            let des = {}
+            $.ajax({
+                type: "GET",
+                url: "/api/moviedata2",
+                data: {},
+                success: function (response) {
+                    des = response
+
+
+                    let rating = des['rating']
+                    let time = des['time']
+                    let review = des['review']
+                    let good = des['good']
+                    let bad = des['bad']
+                    let controversy = des['controversy']
+
+
+                    topic = des['topic']
+                    let count = des['count']
+
+
+                    $('#topic1').text('#' + des['topic'][0])
+                    $('#topic2').text('#' + des['topic'][1])
+                    $('#topic3').text('#' + des['topic'][2])
+                    $('#topic4').text('#' + des['topic'][3])
+                    $('#topic5').text('#' + des['topic'][4])
+                    $('#topic6').text('#' + des['topic'][5])
+                    $('#topic7').text('#' + des['topic'][6])
+                    $('#topic8').text('#' + des['topic'][7])
+                    $('#topic9').text('#' + des['topic'][8])
+                    $('#topic10').text('#' + des['topic'][9])
+
+
+                    topic_time = des['topic_time']
+                    topic_reviews = des['topic_reviews']
+                    topic_good = des['topic_good']
+                    topic_bad = des['topic_bad']
+
+                    $('#topic1_time').text('[' + topic_time[0] + ']  ' + '공감 ' + topic_good[0] + '  / ' + ' 비공감 ' + topic_bad[0])
+                    $('#topic1_reviews').text(topic_reviews[0])
+
+                    $('#topic2_time').text('[' + topic_time[1] + ']  ' + '공감 ' + topic_good[1] + '  / ' + ' 비공감 ' + topic_bad[1])
+                    $('#topic2_reviews').text(topic_reviews[1])
+
+                    $('#topic3_time').text('[' + topic_time[2] + ']  ' + '공감 ' + topic_good[2] + '  / ' + ' 비공감 ' + topic_bad[2])
+                    $('#topic3_reviews').text(topic_reviews[2])
+
+
+                    $('#topic4_time').text('[' + topic_time[3] + ']  ' + '공감 ' + topic_good[3] + '  / ' + ' 비공감 ' + topic_bad[3])
+                    $('#topic4_reviews').text(topic_reviews[3])
+
+
+                    $('#topic5_time').text('[' + topic_time[4] + ']  ' + '공감 ' + topic_good[4] + '  / ' + ' 비공감 ' + topic_bad[4])
+                    $('#topic5_reviews').text(topic_reviews[4])
+
+
+                    $('#topic6_time').text('[' + topic_time[5] + ']  ' + '공감 ' + topic_good[5] + '  / ' + ' 비공감 ' + topic_bad[5])
+                    $('#topic6_reviews').text(topic_reviews[5])
+
+
+                    $('#topic7_time').text('[' + topic_time[6] + ']  ' + '공감 ' + topic_good[6] + '  / ' + ' 비공감 ' + topic_bad[6])
+                    $('#topic7_reviews').text(topic_reviews[6])
+
+
+                    $('#topic8_time').text('[' + topic_time[7] + ']  ' + '공감 ' + topic_good[7] + '  / ' + ' 비공감 ' + topic_bad[7])
+                    $('#topic8_reviews').text(topic_reviews[7])
+
+                    $('#topic9_time').text('[' + topic_time[8] + ']  ' + '공감 ' + topic_good[8] + '  / ' + ' 비공감 ' + topic_bad[8])
+                    $('#topic9_reviews').text(topic_reviews[8])
+
+                    $('#topic10_time').text('[' + topic_time[9] + ']  ' + '공감 ' + topic_good[9] + '  / ' + ' 비공감 ' + topic_bad[9])
+                    $('#topic10_reviews').text(topic_reviews[9])
+
+
+                    let top = []
+                    for (let i = 0; i < topic.length; i++) {
+                        top.push(topic[i])
+                    }
+                    let temp_html = `<div class="option_row">
+                                <div class="option_left1">
+                                    <div class="card" onClick="button1()">
+                                        <div class="container3">
+                                            <h3 style="margin-top:5px; margin-bottom:20px;"><b>1</b></h3>
+
+                                            <p class="sunflower" style="margin-bottom:10px; font-size:1.2rem;">
+                                                ${top[0]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="option_left2">
+                                    <div class="card" onClick="button2()">
+                                        <div class="container3">
+                                            <h4 style="margin-top:5px; margin-bottom:20px;"><b>2</b></h4>
+
+                                            <p class="sunflower" style="margin-bottom:10px; font-size:1.1rem;">
+                                                ${top[1]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="option_left3">
+                                    <div class="card">
+                                        <div class="container3" onClick="button3()">
+                                            <h4 style="margin-top:5px; margin-bottom:20px;"><b>3</b></h4>
+
+                                            <p class="sunflower" style="margin-bottom:10px; font-size:1.1rem;">
+                                                ${top[2]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="option_left4">
+                                    <div class="card">
+                                        <div class="container3" onClick="button4()">
+                                            <h5 style=" margin-top:5px; margin-bottom:20px;"><b>4</b></h5>
+
+                                            <p class="sunflower" style="margin-bottom:10px;">
+                                                ${top[3]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="option_left5">
+                                    <div class="card">
+                                        <div class="container3" onClick="button5()">
+                                            <h5 style="margin-top:5px; margin-bottom:20px;"><b>5</b></h5>
+
+                                            <p class="sunflower" style="margin-bottom:10px;">
+                                                ${top[4]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="option_row">
+                                <div class="option_left1">
+                                    <div class="card" onClick="button6()">
+                                        <div class="container3">
+                                            <h5 style="margin-top:5px; margin-bottom:20px;"><b>6</b></h5>
+
+                                            <p class="sunflower" style="margin-bottom:10px;">
+                                                ${top[5]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="option_left2">
+                                    <div class="card" onClick="button7()">
+                                        <div class="container3">
+                                            <h6 style="margin-top:5px; margin-bottom:20px;"><b>7</b></h6>
+
+                                            <p class="sunflower" style="margin-bottom:10px;">
+                                                   ${top[6]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="option_left3">
+                                    <div class="card" onClick="button8()">
+                                        <div class="container3" >
+                                            <h6 style="margin-top:5px; margin-bottom:20px;"><b>8</b></h6>
+
+                                            <p class="sunflower" style="margin-bottom:10px;">
+                                                ${top[7]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="option_left4">
+                                    <div class="card" onClick="button9()">
+                                        <div class="container3">
+                                            <h6 style="margin-top:5px; margin-bottom:20px;"><b>9</b></h6>
+
+                                            <p class="sunflower" style="margin-bottom:10px;">
+                                                ${top[8]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="option_left5">
+                                    <div class="card" onClick="button10()">
+                                        <div class="container3">
+                                            <h6 style="margin-top:5px; margin-bottom:20px;"><b>10</b></h6>
+
+                                            <p class="sunflower" style="margin-bottom:10px;">
+                                               ${top[9]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>`
+
+
+                    $('#top10-card').append(temp_html)
+
+
+                }
+            })
+        }
+
+        function button1() {
+            $('#topicHere').empty()
+            let _html = `<div class="white-block" style="line-height:300%; letter-spacing :0.8px; height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic1"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic1_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic1_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>`
+            $('#topicHere').append(_html)
+            $('#topic1').text('#' + topic[0])
+            $('#topic1_time').text('[' + topic_time[0] + ']  ' + '공감 ' + topic_good[0] + '  / ' + ' 비공감 ' + topic_bad[0])
+            $('#topic1_reviews').text(topic_reviews[0])
+        }
+
+        function button2() {
+            $('#topicHere').empty()
+            let _html = `<div class="white-block" style="line-height:300%; letter-spacing :0.8px; height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic2"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic2_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic2_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>`
+            $('#topicHere').append(_html)
+            $('#topic2').text('#' + topic[1])
+            $('#topic2_time').text('[' + topic_time[1] + ']  ' + '공감 ' + topic_good[1] + '  / ' + ' 비공감 ' + topic_bad[1])
+            $('#topic2_reviews').text(topic_reviews[1])
+        }
+
+        function button3() {
+            $('#topicHere').empty()
+            let _html = `<div class="white-block" style="line-height:300%; letter-spacing :0.8px; height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic3"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic3_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic3_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>`
+            $('#topicHere').append(_html)
+            $('#topic3').text('#' + topic[2])
+            $('#topic3_time').text('[' + topic_time[2] + ']  ' + '공감 ' + topic_good[2] + '  / ' + ' 비공감 ' + topic_bad[2])
+            $('#topic3_reviews').text(topic_reviews[2])
+        }
+
+        function button4() {
+            $('#topicHere').empty()
+            let _html = `<div class="white-block" style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic4"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic4_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic4_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>`
+            $('#topicHere').append(_html)
+            $('#topic4').text('#' + topic[3])
+            $('#topic4_time').text('[' + topic_time[3] + ']  ' + '공감 ' + topic_good[3] + '  / ' + ' 비공감 ' + topic_bad[3])
+            $('#topic4_reviews').text(topic_reviews[3])
+        }
+
+        function button5() {
+            $('#topicHere').empty()
+            let _html = `<div class="white-block" style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic5"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic5_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic5_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>`
+            $('#topicHere').append(_html)
+            $('#topic5').text('#' + topic[4])
+            $('#topic5_time').text('[' + topic_time[4] + ']  ' + '공감 ' + topic_good[4] + '  / ' + ' 비공감 ' + topic_bad[4])
+            $('#topic5_reviews').text(topic_reviews[4])
+        }
+
+        function button6() {
+            $('#topicHere').empty()
+            let _html = `<div class="white-block" style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic6"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic6_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic6_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>`
+            $('#topicHere').append(_html)
+            $('#topic6').text('#' + topic[5])
+            $('#topic6_time').text('[' + topic_time[5] + ']  ' + '공감 ' + topic_good[5] + '  / ' + ' 비공감 ' + topic_bad[5])
+            $('#topic6_reviews').text(topic_reviews[5])
+        }
+
+        function button7() {
+            $('#topicHere').empty()
+            let _html = `<div class="white-block" style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic7"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic7_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic7_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>`
+            $('#topicHere').append(_html)
+            $('#topic7').text('#' + topic[6])
+            $('#topic7_time').text('[' + topic_time[6] + ']  ' + '공감 ' + topic_good[6] + '  / ' + ' 비공감 ' + topic_bad[6])
+            $('#topic7_reviews').text(topic_reviews[6])
+        }
+
+        function button8() {
+            $('#topicHere').empty()
+            let _html = `<div class="white-block" style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic8"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic8_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic8_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>`
+            $('#topicHere').append(_html)
+            $('#topic8').text('#' + topic[7])
+            $('#topic8_time').text('[' + topic_time[7] + ']  ' + '공감 ' + topic_good[7] + '  / ' + ' 비공감 ' + topic_bad[7])
+            $('#topic8_reviews').text(topic_reviews[7])
+        }
+
+        function button9(){
+            $('#topicHere').empty()
+            let _html =`<div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic9"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic9_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic9_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>`
+            $('#topicHere').append(_html)
+            $('#topic9').text('#' + topic[8])
+            $('#topic9_time').text('[' + topic_time[8] + ']  ' + '공감 ' + topic_good[8] + '  / ' + ' 비공감 ' + topic_bad[8])
+            $('#topic9_reviews').text(topic_reviews[8])
+        }
+        function button10(){
+            $('#topicHere').empty()
+            let _html = `<div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic10"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic10_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic10_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>`
+            $('#topicHere').append(_html)
+            $('#topic10').text('#' + topic[9])
+            $('#topic10_time').text('[' + topic_time[9] + ']  ' + '공감 ' + topic_good[9] + '  / ' + ' 비공감 ' + topic_bad[9])
+            $('#topic10_reviews').text(topic_reviews[9])
+        }
+        function buttonAll() {
+            $('#topicHere').empty()
+            $('#top10-card').empty()
+            let _html = `<div class="white-block"
+                         style="line-height:300%; letter-spacing :0.8px; height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic1"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic1_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic1_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:300%; letter-spacing :0.8px; height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic2"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic2_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic2_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:300%; letter-spacing :0.8px; height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic3"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic3_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic3_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic4"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic4_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic4_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic5"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic5_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic5_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic6"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic6_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic6_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic7"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic7_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic7_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic8"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic8_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic8_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic9"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic9_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic9_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic10"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic10_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic10_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>`
+            $('#topicHere').append(_html);
+            get_reviews();
+        }
+
+        function movieAll() {
+            location.href = '/movieseeAll'
+        }
+
+        function movieAge() {
+            location.href = '/movieAge'
+        }
+
+        function movieGender() {
+            location.href = '/movieGender'
+        }
+
+        function movieWord() {
+            location.href = '/movieWord'
+        }
+
+        function movieStat() {
+            location.href = '/movieStat'
+        }
+
+        function returnMain() {
+            location.href = '/'
+        }
+
+        function showall() {
+            location.href = '/movie_result'
+        }
+
+    </script>
+</head>
+<body class="sb-nav-fixed">
+<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+    <!-- Navbar Brand-->
+    <a class="navbar-brand title" onClick="returnMain()">&nbsp; 베리 &nbsp;<span class="subtitle">-&nbsp;영화 후기</span></a>
+    <!-- Sidebar Toggle-->
+    <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i
+            class="fas fa-bars"></i></button>
+
+    <!-- Help tip -->
+    <div class="help-tip" style="z-index:1;">
+        <p>댓글/리뷰 분석 사이트인 "베리"를 이용해주셔서 감사합니다.<br><br>영화 분석 시 제공하는 것들<br>
+            <br> - 네티즌, 성별/나이별 관람추이, 성별/나이별 만족도, 한줄평, 감상포인트
+            <br> - 각 주제별 평점, 많이 언급된 상위 단어
+            <br> - 댓글 작성시간 추이
+            <br> - 영화에 대한 관람객의 전반적인 반응을 담은 워드클라우드</p>
+    </div>
+
+
+</nav>
+<div id="layoutSidenav">
+    <div id="layoutSidenav_nav">
+        <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+            <div class="sb-sidenav-menu">
+                <div class="nav">
+                    <div class="sb-sidenav-menu-heading">Main</div>
+                    <a class="nav-link" onClick="showall()" class="dohyeon_subtitle">
+                        <!-- news_result.html -->
+                        <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                        All result
+                    </a>
+                    <div class="sb-sidenav-menu-heading">Statistics</div>
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
+                       aria-expanded="false" aria-controls="collapseLayouts">
+                        <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                        Descriptive
+                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne"
+                         data-bs-parent="#sidenavAccordion">
+                        <nav class="sb-sidenav-menu-nested nav">
+                            <a class="nav-link" onClick="movieAll()">See all</a>
+                            <a class="nav-link" onClick="movieGender()">성별 관람추이 & 만족도</a>
+                            <a class="nav-link" onClick="movieAge()">나이별 관람추이 & 만족도</a>
+                            <a class="nav-link" onClick="movieWord()">댓글 작성 시간 분포 & 워드 클라우드</a>
+
+                        </nav>
+                    </div>
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages"
+                       aria-expanded="false" aria-controls="collapsePages">
+                        <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                        Statistical
+                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapsePages" aria-labelledby="headingTwo"
+                         data-bs-parent="#sidenavAccordion">
+                        <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
+
+                            <a class="nav-link" onClick="movieStat()">토픽 모델링</a>
+
+
+                        </nav>
+                    </div>
+
+                </div>
+            </div>
+            <div class="sb-sidenav-footer">
+                <div class="small">Generated by :</div>
+                HF-267 [베댓]
+            </div>
+        </nav>
+    </div>
+    <div id="layoutSidenav_content">
+        <main class="main users chart-page" id="skip-target">
+            <div class="container_2">
+                <h2 class="main-title dohyeon_title" style="text-align: center;">추론 통계<span style="font-size:0.7em;"
+                                                                                            id="title">
+
+                </span>
+                </h2>
+
+                <h4 style="margin-bottom:10px; text-align: center;" class="dohyeon_subtitle">토픽 TOP10</h4>
+                <div class="stat-cards">
+                    <div class="white-block good_bad" style="margin-top:0px;">
+                        <article class="stat-cards-item" id="top10-card">
+
+
+                        </article>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom:10px; margin-left:20px;" class="dohyeon_subtitle"> 토픽 별 후기
+                    <button
+                            type="button" class="btn btn-warning"
+                            style=" padding:0; border-radius:50px; height:30px; width:80px; font-size:1rem;"
+                            onClick="buttonAll()">전체 보기
+                    </button>
+                </h3>
+                <br>
+                <div class="col-lg-12" id="topicHere">
+                    <div class="white-block"
+                         style="line-height:300%; letter-spacing :0.8px; height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic1"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic1_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic1_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:300%; letter-spacing :0.8px; height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic2"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic2_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic2_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:300%; letter-spacing :0.8px; height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic3"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic3_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic3_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic4"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic4_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic4_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic5"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic5_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic5_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic6"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic6_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic6_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic7"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic7_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic7_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic8"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic8_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic8_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic9"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic9_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic9_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="white-block"
+                         style="line-height:200%; letter-spacing :0.8px;height:150px; overflow:scroll; overflow-x:hidden;">
+                        <div style="positon:relative;">
+                            <div class="container_2">
+                                <h5 style="margin-botton:20px; font-size : 20px;" id="topic10"
+                                    class="dohyeon_title"></h5>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h4 style="margin-botton:20px; font-size : 14px;" id="topic10_reviews"></h4>
+                                <h5 style="margin-bottom:20px;"></h5>
+                                <h5 style="font-size : 13px;" id="topic10_time"></h5>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+
+        </main>
+
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+<script src="../static/scripts.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <title>베리 - 댓글 분석 프로젝트</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet"/>
+    <link href="../static/style02.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"
+            crossorigin="anonymous"></script>
+
+    <!-- Bootstrap icons-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet"
+          type="text/css"/>
+
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet"
+          type="text/css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Sunflower:wght@300&display=swap" rel="stylesheet">
+    <!-- fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap" rel="stylesheet">
+    <!-- Core theme CSS (includes Bootstrap)-->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+    <link href="css/demo.css" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="/SRC2/jbar/jqbar.css"/>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.18/c3.min.css"/>
+
+
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.11/c3.min.js"></script>
+
+    <script>
+        var male = 0
+        var female = 0
+
+        var male_sat = 0
+        var female_sat = 0
+        $(document).ready(function () {
+            /* get_url(); */
+            get_statics();
+
+            /* get_topics(); */
+        });
+
+        function get_statics() {
+            let des = {}
+            $.ajax({
+                type: "GET",
+                url: "/api/moviedata1",
+                data: {},
+                success: function (response) {
+                    des = response
+
+
+                    male = Number(des['남자 관람비율'].slice(0, -1));
+                    female = Number(des['여자 관람비율'].slice(0, -1));
+
+                    male_sat = des['남자 만족도']
+                    female_sat = des['여자 만족도']
+
+                    $('#sex_ratio').append(draw_pieChart(male, female))
+                    $('#sex_satis').append(draw_pieChart_satis(male_sat, female_sat))
+
+
+                }
+            })
+        }
+
+        function draw_pieChart(male, female) {
+            new Chart(document.getElementById("sex_ratio"), {
+                type: 'pie',
+                data: {
+                    labels: ["남자", "여자"],
+                    datasets: [{
+                        backgroundColor: ["#86C8FC", "#FF7E5A"],
+                        data: [male, female]
+                    }]
+                },
+                options: {
+                    title: {
+                        display: true
+                    }
+                }
+            });
+        }
+
+        function draw_pieChart_satis(male, female) {
+            new Chart(document.getElementById("sex_satis"), {
+                type: 'pie',
+                data: {
+                    labels: ["남자", "여자"],
+                    datasets: [{
+                        backgroundColor: ["#86C8FC", "#FF7E5A"],
+                        data: [male, female]
+                    }]
+                },
+                options: {
+                    title: {
+                        display: true
+                    }
+                }
+            });
+        }
+
+
+        function movieAll() {
+            location.href = '/movieseeAll'
+        }
+
+        function movieAge() {
+            location.href = '/movieAge'
+        }
+
+        function movieGender() {
+            location.href = '/movieGender'
+        }
+
+        function movieWord() {
+            location.href = '/movieWord'
+        }
+
+        function movieStat() {
+            location.href = '/movieStat'
+        }
+
+        function returnMain() {
+            location.href = '/'
+        }
+
+        function showall() {
+            location.href = '/movie_result'
+        }
+
+        function howmany() {
+            $('#inputHere').empty()
+            let temp_html=``
+            if(male<female){
+                temp_html=`<a style="position:absolute; top:0; left:0; bottom:0; right:0; height:10%; margin:35% auto; font-size:5rem;" class="dohyeon_title"><</a>`
+            }
+            else{
+                temp_html=`<a style="position:absolute; top:0; left:0; bottom:0; right:0; height:10%; margin:35% auto; font-size:5rem;" class="dohyeon_title">></a>`
+            }
+            $('#inputHere').append(temp_html)
+        }
+
+        function whatrate() {
+            $('#inputHere').empty()
+            let temp_html=``
+
+            if(male_sat<female_sat){
+                temp_html=`<a style="position:absolute; top:0; left:0; bottom:0; right:0; height:10%; margin:35% auto; font-size:5rem;" class="dohyeon_title"><</a>`
+            }
+            else{
+                temp_html=`<a style="position:absolute; top:0; left:0; bottom:0; right:0; height:10%; margin:35% auto; font-size:5rem;" class="dohyeon_title">></a>`
+            }
+            $('#inputHere').append(temp_html)
+
+        }
+
+    </script>
+</head>
+<body class="sb-nav-fixed">
+<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+    <!-- Navbar Brand-->
+    <a class="navbar-brand title" onClick="returnMain()">&nbsp; 베리 &nbsp;<span class="subtitle">-&nbsp;영화 후기</span></a>
+    <!-- Sidebar Toggle-->
+    <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i
+            class="fas fa-bars"></i></button>
+
+    <!-- Help tip -->
+    <div class="help-tip" style="z-index:1;">
+        <p>댓글/리뷰 분석 사이트인 "베리"를 이용해주셔서 감사합니다.<br><br>영화 분석 시 제공하는 것들<br>
+            <br> - 네티즌, 성별/나이별 관람추이, 성별/나이별 만족도, 한줄평, 감상포인트
+            <br> - 각 주제별 평점, 많이 언급된 상위 단어
+            <br> - 댓글 작성시간 추이
+            <br> - 영화에 대한 관람객의 전반적인 반응을 담은 워드클라우드</p>
+    </div>
+
+
+</nav>
+<div id="layoutSidenav">
+    <div id="layoutSidenav_nav">
+        <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+            <div class="sb-sidenav-menu">
+                <div class="nav">
+                    <div class="sb-sidenav-menu-heading">Main</div>
+                    <a class="nav-link" onClick="showall()" class="dohyeon_subtitle">
+                        <!-- news_result.html -->
+                        <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                        All result
+                    </a>
+                    <div class="sb-sidenav-menu-heading">Statistics</div>
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
+                       aria-expanded="false" aria-controls="collapseLayouts">
+                        <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                        Descriptive
+                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne"
+                         data-bs-parent="#sidenavAccordion">
+                        <nav class="sb-sidenav-menu-nested nav">
+                            <a class="nav-link" onClick="movieAll()">See all</a>
+                            <a class="nav-link" onClick="movieGender()">성별 관람추이 & 만족도</a>
+                            <a class="nav-link" onClick="movieAge()">나이별 관람추이 & 만족도</a>
+                            <a class="nav-link" onClick="movieWord()">댓글 작성 시간 분포 & 워드 클라우드</a>
+
+                        </nav>
+                    </div>
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages"
+                       aria-expanded="false" aria-controls="collapsePages">
+                        <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                        Statistical
+                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapsePages" aria-labelledby="headingTwo"
+                         data-bs-parent="#sidenavAccordion">
+                        <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
+
+                            <a class="nav-link" onClick="movieStat()">토픽 모델링</a>
+
+
+                        </nav>
+                    </div>
+
+                </div>
+            </div>
+            <div class="sb-sidenav-footer">
+                <div class="small">Generated by :</div>
+                HF-267 [베댓]
+            </div>
+        </nav>
+    </div>
+    <div id="layoutSidenav_content">
+        <main class="main users chart-page" id="skip-target">
+
+            <h2 class="main-title dohyeon_title" style="text-align: center;">기술 통계<span style="font-size:0.7em;"
+                                                                                        id="title">
+
+                </span>
+            </h2>
+
+            <!--                연령대 분포-->
+            <div class="stat-cards">
+
+                <div class="col-md-6 col-xl-12" style="height:350px; ">
+                    <article class="stat-cards-item">
+                        <h4 style="margin-bottom:20px;" class="dohyeon_subtitle">성별 관람 &nbsp; &nbsp; <span><button
+                                type="button" class="btn btn-primary"
+                                style=" padding:0; border-radius:50px; height:30px; width:80px; font-size:1rem;"
+                                onClick="howmany()">관람추이</button>
+                            <button type="button" class="btn btn-primary"
+                                    style=" padding:0; border-radius:50px; height:30px; width:80px; font-size:1rem;"
+                                    onClick="whatrate()">평점</button></span></h4>
+                        <div class="container_2">
+                            <div class="row stat-cards">
+                                <div class="col-xl-3" style="height:80%;">
+
+                                </div>
+                                <div class="col-xl-2" style="height:80%;">
+                                    <img style="width:200px; margin-top:30px;" src="../static/assets/img/male.png">
+                                </div>
+                                <div class="col-xl-2"
+                                     style="positive:relative; height:80%; text-align: center; align: center;" id="inputHere">
+
+                                </div>
+                                <div class="col-xl-2" style="height:80%;">
+                                    <img style="width:200px; margin-top:30px;" src="../static/assets/img/female.png">
+                                </div>
+
+                            </div>
+
+
+                        </div>
+
+                    </article>
+                </div>
+
+
+            </div>
+            <div class="row stat-cards">
+                <div class="col-md-6 col-xl-6">
+                    <article class="stat-cards-item">
+                        <h4 style="margin-bottom:20px;" class="dohyeon_title">관람추이</h4>
+                        <div class="container_2">
+                            <div class="column">
+
+                                <canvas id="sex_ratio" , width="40" , height="20"></canvas>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-md-6 col-xl-6">
+                    <article class="stat-cards-item">
+                        <h4 style="margin-bottom:20px;" class="dohyeon_title">만족도</h4>
+                        <div class="container_2">
+                            <div class="column">
+                                <canvas id="sex_satis" , width="40" , height="20"></canvas>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+            </div>
+
+
+        </main>
+
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+<script src="../static/scripts.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+
+</body>
+</html>

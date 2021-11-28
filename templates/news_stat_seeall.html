@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <title>베리 - 댓글 분석 프로젝트</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet"/>
+    <link href="../static/styles.css" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"
+            crossorigin="anonymous"></script>
+
+    <!-- Bootstrap icons-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet"
+          type="text/css"/>
+
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet"
+          type="text/css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+
+<!--    put this-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sunflower:wght@500&display=swap" rel="stylesheet">
+
+    <!-- fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap" rel="stylesheet">
+    <!-- Core theme CSS (includes Bootstrap)-->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+    <link href="css/demo.css" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="/SRC2/jbar/jqbar.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.18/c3.min.css"/>
+
+
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.4.11/c3.min.js"></script>
+    <script>
+        var colors = ['#D9C7D2', '#C5A2BC', '#506358', '#88A185', '#CAD2B8', '#E2E3CE']
+
+        $(document).ready(function () {
+
+            contention();
+        });
+
+        function set_react(skills) {
+            (function ($) {
+                "use strict";
+                $(function () {
+                    function animated_contents() {
+                        $(".zt-skill-bar > div ").each(function (i) {
+                            var $this = $(this);
+                            // skills = $this.data('width');
+
+                            $this.css({'width': skills + '%'});
+
+                        });
+                    }
+
+                    if (jQuery().appear) {
+                        $('.zt-skill-bar').appear().on('appear', function () {
+                            animated_contents();
+                        });
+                    } else {
+                        animated_contents();
+                    }
+                });
+            }(jQuery));
+        }
+
+        function contention() {
+            $.ajax({
+                type: "GET",
+                url: "/api/newsdata2",
+                data: {},
+                success: function (response) { // 성공하면
+
+                    let reply = response['contention_reply'] //논란수치순으로 정렬한 댓글 가져오기
+                    let number = response['number'] //댓글 개수 가져오기
+                    let title = response['title']
+                    let time = response['time'] //작성시간 가져오기 (년월일 시)
+                    let percent = response['percent']
+                    let temp_good = response['good']
+                    let temp_bad = response['bad']
+                    let one = response['firstTopic']
+                    let two = response['secondTopic']
+                    let three = response['thirdTopic']
+                    let four = response['fourthTopic']
+                    let five = response['fifthTopic']
+                    let top10 = response['top10']
+
+                    set_react(percent)
+
+                    let good_list = ""
+                    let temp = ""
+                    for (let i = 0; i < temp_good.length; i++) {
+                        temp = temp_good[i]
+                        good_list += " # " + temp
+                    }
+
+                    let bad_list = ""
+                    for (let i = 0; i < temp_bad.length; i++) {
+                        temp = temp_bad[i]
+                        bad_list += " # " + temp
+                    }
+
+                    $('#good_topic').html(good_list)
+                    $('#bad_topic').html(bad_list)
+
+                    let temp1 = []
+                    let temp2 = []
+                    for (let i = 0; i < one.length; i++) {
+                        temp1.push(one[i]['word'])
+                        temp2.push(one[i]['beta'])
+                    }
+
+                    let temp_html = `<div>
+                        <span class="one1"
+                              style="width:100%;"> ${temp1[0]}</span>
+                        <span class="one2" style="width:${temp2[1] * 100 / temp2[0]}%;"> ${temp1[1]}</span>
+                        <span class="one3"
+                              style="width:${temp2[2] * 100 / temp2[0]}%;"> ${temp1[2]}</span>
+                        <span class="one4"
+                              style="width:${temp2[3] * 100 / temp2[0]}%;"> ${temp1[3]}</span>
+                        <span class="one5"
+                              style="width:${temp2[4] * 100 / temp2[0]}%;"> ${temp1[4]}</span>
+                    </div>`
+                    $('#first').append(temp_html);
+
+                    temp1 = []
+                    temp2 = []
+                    for (let i = 0; i < two.length; i++) {
+                        temp1.push(two[i]['word'])
+                        temp2.push(two[i]['beta'])
+                    }
+                    temp_html = `<div>
+                        <span class="two1"
+                              style="width:100%;"> ${temp1[0]}</span>
+                        <span class="two2" style="width:${temp2[1] * 100 / temp2[0]}%;"> ${temp1[1]}</span>
+                        <span class="two3"
+                              style="width:${temp2[2] * 100 / temp2[0]}%;"> ${temp1[2]}</span>
+                        <span class="two4"
+                              style="width:${temp2[3] * 100 / temp2[0]}%;"> ${temp1[3]}</span>
+                        <span class="two5"
+                              style="width:${temp2[4] * 100 / temp2[0]}%;"> ${temp1[4]}</span>
+                    </div>`
+                    $('#second').append(temp_html);
+
+                    temp1 = []
+                    temp2 = []
+                    for (let i = 0; i < three.length; i++) {
+                        temp1.push(three[i]['word'])
+                        temp2.push(three[i]['beta'])
+                    }
+                    temp_html = `<div>
+                        <span class="three1"
+                              style="width:100%;"> ${temp1[0]}</span>
+                        <span class="three2" style="width:${temp2[1] * 100 / temp2[0]}%;"> ${temp1[1]}</span>
+                        <span class="three3"
+                              style="width:${temp2[2] * 100 / temp2[0]}%;"> ${temp1[2]}</span>
+                        <span class="three4"
+                              style="width:${temp2[3] * 100 / temp2[0]}%;"> ${temp1[3]}</span>
+                        <span class="three5"
+                              style="width:${temp2[4] * 100 / temp2[0]}%;"> ${temp1[4]}</span>
+                    </div>`
+                    $('#third').append(temp_html);
+
+                    temp1 = []
+                    temp2 = []
+                    for (let i = 0; i < four.length; i++) {
+                        temp1.push(four[i]['word'])
+                        temp2.push(four[i]['beta'])
+                    }
+                    temp_html = `<div>
+                        <span class="four1"
+                              style="width:100%;"> ${temp1[0]}</span>
+                        <span class="four2" style="width:${temp2[1] * 100 / temp2[0]}%;"> ${temp1[1]}</span>
+                        <span class="four3"
+                              style="width:${temp2[2] * 100 / temp2[0]}%;"> ${temp1[2]}</span>
+                        <span class="four4"
+                              style="width:${temp2[3] * 100 / temp2[0]}%;"> ${temp1[3]}</span>
+                        <span class="four5"
+                              style="width:${temp2[4] * 100 / temp2[0]}%;"> ${temp1[4]}</span>
+                    </div>`
+                    $('#fourth').append(temp_html);
+
+                    temp1 = []
+                    temp2 = []
+
+                    for (let i = 0; i < five.length; i++) {
+                        temp1.push(five[i]['word'])
+                        temp2.push(five[i]['beta'])
+                    }
+                    temp_html = `<div>
+                        <span class="five1"
+                              style="width:100%;"> ${temp1[0]}</span>
+                        <span class="five2" style="width:${temp2[1] * 100 / temp2[0]}%;"> ${temp1[1]}</span>
+                        <span class="five3"
+                              style="width:${temp2[2] * 100 / temp2[0]}%;"> ${temp1[2]}</span>
+                        <span class="five4"
+                              style="width:${temp2[3] * 100 / temp2[0]}%;"> ${temp1[3]}</span>
+                        <span class="five5"
+                              style="width:${temp2[4] * 100 / temp2[0]}%;"> ${temp1[4]}</span>
+                    </div>`
+                    $('#fifth').append(temp_html);
+
+                    let top = []
+                    for (let i = 0; i < top10.length; i++) {
+                        top.push(top10[i]['noun'])
+                    }
+                    temp_html = `<div class="option_row">
+                                <div class="option_left1">
+                                    <div class="card">
+                                        <div class="container3">
+                                            <h3 style="margin-top:5px; margin-bottom:20px;"><b>1</b></h3>
+
+                                            <p class="sunflower" style="margin-bottom:10px; font-size:1.2rem;">
+                                                ${top[0]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="option_left2">
+                                    <div class="card">
+                                        <div class="container3">
+                                            <h4 style="margin-top:5px; margin-bottom:20px;"><b>2</b></h4>
+
+                                            <p class="sunflower" style="margin-bottom:10px; font-size:1.1rem;">
+                                                ${top[1]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="option_left3">
+                                    <div class="card">
+                                        <div class="container3">
+                                            <h4 style="margin-top:5px; margin-bottom:20px;"><b>3</b></h4>
+
+                                            <p class="sunflower" style="margin-bottom:10px; font-size:1.1rem;">
+                                                ${top[2]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="option_left4">
+                                    <div class="card">
+                                        <div class="container3">
+                                            <h5 style=" margin-top:5px; margin-bottom:20px;"><b>4</b></h5>
+
+                                            <p class="sunflower" style="margin-bottom:10px;">
+                                                ${top[3]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="option_left5">
+                                    <div class="card">
+                                        <div class="container3">
+                                            <h5 style="margin-top:5px; margin-bottom:20px;"><b>5</b></h5>
+
+                                            <p class="sunflower" style="margin-bottom:10px;">
+                                                ${top[4]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="option_row">
+                                <div class="option_left1">
+                                    <div class="card">
+                                        <div class="container3">
+                                            <h5 style="margin-top:5px; margin-bottom:20px;"><b>6</b></h5>
+
+                                            <p class="sunflower" style="margin-bottom:10px;">
+                                                ${top[5]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="option_left2">
+                                    <div class="card">
+                                        <div class="container3">
+                                            <h6 style="margin-top:5px; margin-bottom:20px;"><b>7</b></h6>
+
+                                            <p class="sunflower" style="margin-bottom:10px;">
+                                                   ${top[6]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="option_left3">
+                                    <div class="card">
+                                        <div class="container3">
+                                            <h6 style="margin-top:5px; margin-bottom:20px;"><b>8</b></h6>
+
+                                            <p class="sunflower" style="margin-bottom:10px;">
+                                                ${top[7]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="option_left4">
+                                    <div class="card">
+                                        <div class="container3">
+                                            <h6 style="margin-top:5px; margin-bottom:20px;"><b>9</b></h6>
+
+                                            <p class="sunflower" style="margin-bottom:10px;">
+                                                ${top[8]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="option_left5">
+                                    <div class="card">
+                                        <div class="container3">
+                                            <h6 style="margin-top:5px; margin-bottom:20px;"><b>10</b></h6>
+
+                                            <p class="sunflower" style="margin-bottom:10px;">
+                                               ${top[9]}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>`
+
+                    $('#top10-card').append(temp_html);
+                }
+            });
+        }
+
+
+        function desAll() {
+
+            location.href = '/news_des_all'
+        }
+
+        function desAge() {
+            location.href = '/news_des_age'
+        }
+
+        function desWord() {
+            location.href = '/news_des_word'
+        }
+
+        function statAll() {
+            location.href = '/news_stat_all'
+        }
+
+        function statPos() {
+            location.href = '/news_stat_pos'
+        }
+
+        function statTopic() {
+            location.href = '/news_stat_topic'
+        }
+
+        function returnMain() {
+            location.href = '/'
+        }
+
+        function showall() {
+            location.href = '/news_result'
+        }
+
+
+    </script>
+</head>
+<body class="sb-nav-fixed">
+<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+    <!-- Navbar Brand-->
+    <a class="navbar-brand title" onClick="returnMain()">&nbsp; 베리 &nbsp;<span class="subtitle">-&nbsp;뉴스 댓글</span></a>
+    <!-- Sidebar Toggle-->
+    <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i
+            class="fas fa-bars"></i></button>
+
+    <!-- Help tip -->
+    <div class="help-tip" style="z-index:1;">
+        <p>댓글/리뷰 분석 사이트인 "베리"를 이용해주셔서 감사합니다.<br><br>뉴스 댓글 분석 시 제공하는 것들<br>
+            <br> - 성별 나이별 분포 : 네이버 뉴스 댓글 작성자의 성별, 연령대별 비율
+            <br> - 댓글 작성 시간 분포도 : 네이버 뉴스 댓글 작성 시간대별 분포
+            <br> - 긍정 - 부정 수치 그래프 : 감성분석기법을 사용하여 긍부정 판단
+            <br> - 논란수치 : 논란이 되는 댓글 상위 4개
+            <br> - 관련 단어 토픽 모델링
+            <br> - 워드클라우드 : 핵심 단어 시각화</p>
+    </div>
+
+
+</nav>
+<div id="layoutSidenav">
+    <div id="layoutSidenav_nav">
+        <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+            <div class="sb-sidenav-menu">
+                <div class="nav">
+                    <div class="sb-sidenav-menu-heading">Main</div>
+                    <a class="nav-link" onClick="showall()" class="dohyeon_subtitle">
+                        <!-- news_result.html -->
+                        <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                        All result
+                    </a>
+                    <div class="sb-sidenav-menu-heading">Statistics</div>
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
+                       aria-expanded="false" aria-controls="collapseLayouts">
+                        <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                        Descriptive
+                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne"
+                         data-bs-parent="#sidenavAccordion">
+                        <nav class="sb-sidenav-menu-nested nav">
+                            <a class="nav-link" onClick="desAll()">See all</a>
+                            <a class="nav-link" onClick="desAge()">성별 및 나이 분포</a>
+                            <a class="nav-link" onClick="desWord()">댓글 작성 시간 분포 & 워드 클라우드</a>
+
+                        </nav>
+                    </div>
+                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages"
+                       aria-expanded="false" aria-controls="collapsePages">
+                        <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                        Statistical
+                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapsePages" aria-labelledby="headingTwo"
+                         data-bs-parent="#sidenavAccordion">
+                        <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
+                            <a class="nav-link" onClick="statAll()">See all</a>
+                            <a class="nav-link" onClick="statPos()">긍정-부정</a>
+                            <a class="nav-link" onClick="statTopic()">토픽 모델링</a>
+
+
+                        </nav>
+                    </div>
+
+                </div>
+            </div>
+            <div class="sb-sidenav-footer">
+                <div class="small">Generated by :</div>
+                HF-267 [베댓]
+            </div>
+        </nav>
+    </div>
+    <div id="layoutSidenav_content" style="background-color:rgba(255,240,245,0.5)">
+        <main style="background-color:rgba(255,240,245,0.5)">
+            <div class="container_2" style="text-align: center;">
+                <br>
+                <h2 class="main-title dohyeon_title" style="text-align: center;">추론 통계<span style="font-size:0.7em;"
+                                                                                            id="title"></span>
+                </h2>
+
+                <!--               긍정 부정-->
+                <div class="stat-cards">
+                    <!--                긍정-부정 분석결과-->
+                    <div class="white-block good_bad">
+                        <h4 style="margin-bottom:20px;" class="dohyeon_subtitle">긍정-부정</h4>
+                        <br>
+                        <br>
+                        <div class="zt-skill-bar dohyeon_title" style="position:relative;">
+                            <span style="float:left; position:absolute; font-size:1.5em; padding-top:5.5px;">부정</span>
+                            <div data-width="50" style="height:35px;" id="good">긍정</div>
+
+                        </div>
+                        <br>
+                        <div style="position:relative;">
+                            <div style="position:absolute;">
+                                <span id="good_topic">#긍정토픽1 #긍정토픽2 #긍정토픽3</span>
+                            </div>
+                            <div style="text-align:right;">
+                                <span id="bad_topic">#부정토픽1 #부정토픽2 #부정토픽3</span>
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+                </div>
+                <h4 style="margin-bottom:10px;" class="dohyeon_subtitle">토픽 TOP10</h4>
+                <div class="stat-cards">
+                    <div class="white-block good_bad" style="margin-top:0px; background-color:rgba(255,240,245,0.5);">
+                        <article class="stat-cards-item" id="top10-card">
+
+
+                        </article>
+                    </div>
+                </div>
+                <div class="container_2">
+                    <h2 class="dohyeon_subtitle" style="text-align:center">토픽모델링</h2>
+                    <div class="row stat-cards" style="margin-top:20px;" id="result-topic">
+                        <div class="col-md-6 col-xl-2-5" style="height:300px;">
+                            <article class="stat-card-semi" style="height:300px;">
+                                <div id="first" class="words">
+
+
+                                </div>
+
+                            </article>
+                        </div>
+                        <div class="col-md-6 col-xl-2-5" style="height:300px;">
+                            <article class="stat-card-semi" style="height:300px;">
+                                <div id="second" class="words">
+
+                                </div>
+
+                            </article>
+                        </div>
+                        <div class="col-md-6 col-xl-2-5" style="height:300px;">
+                            <article class="stat-card-semi" style="height:300px;">
+                                <div id="third" class="words">
+
+                                </div>
+
+                            </article>
+                        </div>
+                        <div class="col-md-6 col-xl-2-5" style="height:300px;">
+                            <article class="stat-card-semi" style="height:300px;">
+                                <div id="fourth" class="words">
+
+                                </div>
+
+                            </article>
+                        </div>
+                        <div class="col-md-6 col-xl-2-5" style="height:300px;">
+                            <article class="stat-card-semi" style="height:300px;">
+                                <div id="fifth" class="words">
+
+                                </div>
+
+                            </article>
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+<script src="../static/scripts.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+
+</body>
+</html>
